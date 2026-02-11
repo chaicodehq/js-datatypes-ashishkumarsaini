@@ -28,5 +28,11 @@
  *   // => ""
  */
 export function formatChaiMenu(items) {
-  // Your code here
+  if (!items || !Array.isArray(items) || !items.length) {
+    return '';
+  }
+
+  const filterNonZeroPrices = items.filter((item) => item.price > 0 && item.name);
+  const upperCaseNames = filterNonZeroPrices.map(({ name, price }) => `${name.toUpperCase()} - Rs.${price}`);
+  return upperCaseNames.join(' | ');
 }

@@ -39,5 +39,29 @@
  *   // => { baseAmount: 500, gstRate: 0, gstAmount: 0, totalAmount: 500 }
  */
 export function calculateGST(amount, category) {
-  // Your code here
+  const gstByCategory = {
+    essential: 0,
+    food: 5,
+    standard: 12,
+    electronics: 18,
+    luxury: 28
+  };
+
+  if (!category || typeof category !== 'string' || !gstByCategory.hasOwnProperty(category.toLowerCase())) {
+    return null;
+  }
+
+  if (!amount || typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+    return null;
+  }
+  const gstRate = gstByCategory[category.toLowerCase()];
+  const gstAmount = parseFloat(((amount * gstRate) / 100).toFixed(2));
+  const totalAmount = amount + gstAmount;
+
+  return {
+    baseAmount: amount,
+    gstRate,
+    gstAmount,
+    totalAmount
+  }
 }

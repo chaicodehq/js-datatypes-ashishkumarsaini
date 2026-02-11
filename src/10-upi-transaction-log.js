@@ -47,5 +47,87 @@
  *   //      frequentContact: "Swiggy", allAbove100: false, hasLargeTransaction: true }
  */
 export function analyzeUPITransactions(transactions) {
-  // Your code here
+  if (!Array.isArray(transactions) || !transactions.length) {
+    return null;
+  }
+
+  const filteredTransactions = filterValidTransactions(transactions);
+
+  if (!filteredTransactions.length) {
+    return null;
+  }
+
+  const creditTransactions = filteredTransactions.filter((trans) => trans.type === 'credit');
+  const debitTransactions = filteredTransactions.filter((trans) => trans.type === 'debit');
+
+
+  const totalCredit = creditTransactions.reduce((acc, trans) => acc + trans.amount, 0)
+  const totalDebit = debitTransactions.reduce((acc, trans) => acc + trans.amount, 0)
+
+  const transactionCount = creditTransactions.length + debitTransactions.length;
+
+  const highestTransaction = filteredTransactions.reduce((acc, trans) => {
+    if (trans.amount > acc.amount) {
+      return trans;
+    }
+
+    return acc;
+  }, { amount: 0 });
+
+  const categoryBreakdown = filteredTransactions.reduce((acc = {}, trans) => {
+    const transCategory = trans.category;
+    if (Object.hasOwn(acc, transCategory)) {
+      return { ...acc, [transCategory]: acc[transCategory] + trans.amount }
+    }
+
+    return { ...acc, [transCategory]: trans.amount }
+  }, {});
+
+  const allAbove100 = filteredTransactions.every((trans) => trans.amount > 100);
+  const hasLargeTransaction = filteredTransactions.some((trans) => trans.amount >= 5000);
+
+  return {
+    totalCredit,
+    totalDebit,
+    netBalance: totalCredit - totalDebit,
+    transactionCount,
+    avgTransaction: Math.round((totalCredit + totalDebit) / transactionCount),
+    highestTransaction,
+    categoryBreakdown,
+    frequentContact: getFrequentlyContacted(filteredTransactions),
+    allAbove100,
+    hasLargeTransaction
+  }
+}
+
+const filterValidTransactions = (transactions) => transactions.filter((trans) => {
+  return (trans.type === 'credit' || trans.type === 'debit') && trans.amount && trans.amount > 0
+});
+
+const getFrequentlyContacted = (filteredTransactions) => {
+  const toOccurenceMap = new Map();
+
+  filteredTransactions.forEach((trans) => {
+    const to = trans.to;
+    if (toOccurenceMap.has(to)) {
+      const updatedValue = toOccurenceMap.get(to) + 1;
+
+      toOccurenceMap.set(to, updatedValue);
+      return;
+    }
+
+    toOccurenceMap.set(to, 1);
+  });
+
+  const maxValue = { toCount: 0, name: '' };
+
+
+  toOccurenceMap.forEach((toCount, name) => {
+    if (maxValue.toCount < toCount) {
+      maxValue.name = name;
+      maxValue.toCount = toCount;
+    }
+  });
+
+  return maxValue.name
 }
